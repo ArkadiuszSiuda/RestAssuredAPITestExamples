@@ -19,10 +19,10 @@ public class RestAssuredTest {
     public void VerifyGettingListOfAllItems(){
         Response response = _apiMethods.GetListOfAllItems();
 
-        Assertions.assertEquals(response.statusCode(), 200);
-        Assertions.assertEquals(response.jsonPath().getString("find { it.id == '1' }.name"), "Google Pixel 6 Pro");
-        Assertions.assertEquals(response.jsonPath().getString("find { it.id == '3' }.data.color"), "Cloudy White");
-        Assertions.assertEquals(response.jsonPath().getDouble("find { it.id == '5' }.data.price"), 689.99);
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals("Google Pixel 6 Pro", response.jsonPath().getString("find { it.id == '1' }.name"));
+        Assertions.assertEquals("Cloudy White", response.jsonPath().getString("find { it.id == '3' }.data.color"));
+        Assertions.assertEquals(689.99, response.jsonPath().getDouble("find { it.id == '5' }.data.price"));
     }
 
     @Test
@@ -31,10 +31,10 @@ public class RestAssuredTest {
         Response response =_apiMethods.GetItemById("4");
 
         Assertions.assertAll("Verify object with id 4",
-                () -> Assertions.assertEquals(response.statusCode(), 200),
-                () -> Assertions.assertEquals(response.jsonPath().getString("name"), "Apple iPhone 11, 64GB"),
-                () -> Assertions.assertEquals(response.jsonPath().getString("data.color"), "Purple"),
-                () -> Assertions.assertEquals(response.jsonPath().getDouble("data.price"), 389.99)
+                () -> Assertions.assertEquals(200, response.statusCode()),
+                () -> Assertions.assertEquals("Apple iPhone 11, 64GB", response.jsonPath().getString("name")),
+                () -> Assertions.assertEquals("Purple", response.jsonPath().getString("data.color")),
+                () -> Assertions.assertEquals(389.99, response.jsonPath().getDouble("data.price"))
         );
     }
 
@@ -43,10 +43,10 @@ public class RestAssuredTest {
     public void VerifyGettingMultipleItemsByTheirIds(){
         Response response = _apiMethods.GetMultipleItemsByIds("2", "6", "10");
 
-        Assertions.assertEquals(response.statusCode(), 200);
-        Assertions.assertEquals(response.jsonPath().getString("find { it.id == '2' }.name"), "Apple iPhone 12 Mini, 256GB, Blue");
-        Assertions.assertEquals(response.jsonPath().getString("find { it.id == '6' }.data.generation"), "3rd");
-        Assertions.assertEquals(response.jsonPath().getDouble("find { it.id == '10' }.data.'Screen size'"), 7.9);
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals("Apple iPhone 12 Mini, 256GB, Blue", response.jsonPath().getString("find { it.id == '2' }.name"));
+        Assertions.assertEquals("3rd", response.jsonPath().getString("find { it.id == '6' }.data.generation"));
+        Assertions.assertEquals(7.9, response.jsonPath().getDouble("find { it.id == '10' }.data.'Screen size'"));
     }
 
     @Test
@@ -56,12 +56,14 @@ public class RestAssuredTest {
         Response response = _apiMethods.AddItem(new Product("Best smartphone ever", new Data(2030, 999.99, "Super fast", "5TB")));
         itemId = response.getBody().jsonPath().getString("id");
 
-        Assertions.assertEquals(response.statusCode(), 200);
-        Assertions.assertEquals(response.jsonPath().getString("name"), "Best smartphone ever");
-        Assertions.assertEquals(response.jsonPath().getInt("data.year"), 2030);
-        Assertions.assertEquals(response.jsonPath().getDouble("data.price"), 999.99);
-        Assertions.assertEquals(response.jsonPath().getString("data.cpuModel"), "Super fast");
-        Assertions.assertEquals(response.jsonPath().getString("data.hardDiskSize"), "5TB");
+        Assertions.assertAll(String.format("Verify object with id %s", itemId),
+                () -> Assertions.assertEquals(200, response.statusCode()),
+                () -> Assertions.assertEquals("Best smartphone ever", response.jsonPath().getString("name")),
+                () -> Assertions.assertEquals(2030, response.jsonPath().getInt("data.year")),
+                () -> Assertions.assertEquals(999.99, response.jsonPath().getDouble("data.price")),
+                () -> Assertions.assertEquals("Super fast", response.jsonPath().getString("data.cpuModel")),
+                () -> Assertions.assertEquals("5TB", response.jsonPath().getString("data.hardDiskSize"))
+        );
     }
 
     @Test
@@ -70,13 +72,14 @@ public class RestAssuredTest {
     public void VerifyOverwritingOfExistingItemById(){
         Response response = _apiMethods.ReplaceItem(new Product("Better smartphone", new Data(2035, 777.77, "Super fast++", "10TB")), itemId);
 
-        Assertions.assertEquals(response.statusCode(), 200);
-        Assertions.assertEquals(response.jsonPath().getString("id"), itemId);
-        Assertions.assertEquals(response.jsonPath().getString("name"), "Better smartphone");
-        Assertions.assertEquals(response.jsonPath().getInt("data.year"), 2035);
-        Assertions.assertEquals(response.jsonPath().getDouble("data.price"), 777.77);
-        Assertions.assertEquals(response.jsonPath().getString("data.cpuModel"), "Super fast++");
-        Assertions.assertEquals(response.jsonPath().getString("data.hardDiskSize"), "10TB");
+        Assertions.assertAll(String.format("Verify object with id %s", itemId),
+                () -> Assertions.assertEquals(200, response.statusCode()),
+                () -> Assertions.assertEquals("Better smartphone", response.jsonPath().getString("name")),
+                () -> Assertions.assertEquals(2035, response.jsonPath().getInt("data.year")),
+                () -> Assertions.assertEquals(777.77, response.jsonPath().getDouble("data.price")),
+                () -> Assertions.assertEquals("Super fast++", response.jsonPath().getString("data.cpuModel")),
+                () -> Assertions.assertEquals("10TB", response.jsonPath().getString("data.hardDiskSize"))
+        );
     }
 
     @Test
@@ -85,12 +88,14 @@ public class RestAssuredTest {
     public void VerifyPartialUpdatingOfExistingItemById(){
         Response response = _apiMethods.UpdateItemWithId(new Product("Better smartphone updated"), itemId);
 
-        Assertions.assertEquals(response.statusCode(), 200);
-        Assertions.assertEquals(response.jsonPath().getString("name"), "Better smartphone updated");
-        Assertions.assertEquals(response.jsonPath().getInt("data.year"), 2040);
-        Assertions.assertEquals(777.77, response.jsonPath().getDouble("data.price"));
-        Assertions.assertEquals(response.jsonPath().getString("data.cpuModel"), "Super fast++");
-        Assertions.assertEquals(response.jsonPath().getString("data.hardDiskSize"), "10TB");
+        Assertions.assertAll(String.format("Verify object with id %s", itemId),
+                () -> Assertions.assertEquals(200, response.statusCode()),
+                () -> Assertions.assertEquals("Better smartphone updated", response.jsonPath().getString("name")),
+                () -> Assertions.assertEquals(2035, response.jsonPath().getInt("data.year")),
+                () -> Assertions.assertEquals(777.77, response.jsonPath().getDouble("data.price")),
+                () -> Assertions.assertEquals("Super fast++", response.jsonPath().getString("data.cpuModel")),
+                () -> Assertions.assertEquals("10TB", response.jsonPath().getString("data.hardDiskSize"))
+        );
     }
 
     @Test
@@ -99,7 +104,7 @@ public class RestAssuredTest {
     public void VerifyDeletionOfItemById(){
         Response response = _apiMethods.DeleteItemById(itemId);
 
-        Assertions.assertEquals(response.statusCode(), 200);
-        Assertions.assertEquals(response.jsonPath().getString("message"), String.format("Object with %s, has been deleted.", itemId));
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals(String.format("Object with id = %s has been deleted.", itemId), response.jsonPath().getString("message"));
     }
 }
